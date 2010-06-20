@@ -1,0 +1,63 @@
+REQUIREMENTS
+
+	In order to compile and execute the Ruth and U-connect simulator you need to install the GNU Scientific Library.
+	It can be downloaded at the following location: http://www.gnu.org/software/gsl/
+
+BUILD
+	Ruth
+		Linux:		gcc -o ruth_sim ruth_simulator.c -Wall -lgsl -lgslcblas
+		Mac:		gcc -o ruth_sim ruth_simulator.c -Wall -I/opt/local/include -L/opt/local/lib -lgsl
+
+	U-connect
+	
+		Linux:		gcc -o uconnect_sim uconnect_sim.c -Wall -lgsl -lgslcblas
+		Mac:		gcc -o uconnect_sim uconnect_sim.c -Wall -I/opt/local/include -L/opt/local/lib -lgsl
+
+EXECUTION
+
+	The times must be given in microseconds.
+
+	Ruth:			ruth_sim N_SENSORS N_ITERATIONS EPOCH_T BEACON_T LISTEN_T MIN_NUM_DETECT DIVIDE_ACTIONS PHASE ACTIVE_TIME 
+		
+		N_SENSORS:		Number of sensors (1:N) 
+		N_ITERATIONS		Number of iterations (1:N)
+		EPOCH_T 		Number of epochs (1:N)
+		BEACON_T 		Beacon length (in microseconds)
+		LISTEN_T 		Listen length (in microseconds)
+		MIN_NUM_DETECT 		Minimum number of detections to accomplish per iteration (1:N)
+		DIVIDE_ACTIONS		0/1/2		
+						0: The order of the active phase is Beacon-Listen. Both events are coupled (the first one goes inmediately after the other)
+						1: The position of both events (Beacon, Listen) inside the epochs is generated randomly. The events are decoupled
+						2: The order of the active phase is Listen-Beacon. Both events are coupled (the first one goes inmediately after the other)
+		PHASE			0/1
+						0: No phase.
+						1: The nodes can have a phase that ranges between [0, Epoch_length]
+		ACTIVE_TIME 		0/1/2
+						0: Beacon and Listen events are generated within the interval [0, T-(L+S)] for each epoch. 
+						1: Beacon and Listen events are generated within the interval [0, T] for each epoch. The active phase can overlap with the following epoch. In that case, the events for the next epoch will be generated in the interval [overlap,T]. 
+						2: Beacon and Listen events are generated within the interval [0, T] for each epoch. In case the listen event overlaps with the next epoch, the overlapping segment is placed at the begining of the epoch.
+
+	
+	
+	UConnect:		uconnect_sim N_SENSORS N_ITERATIONS P MIN_NUM_DET CONTACT PHASE
+
+		N_SENSORS		Number of sensors (1:N)
+		N_ITERATIONS		Number of iterations (1:N)
+		P			Prime number that defines the behaviour of U-connect
+		MIN_NUM_DET		Minimum number of detections to accomplish per iteration (1:N) 
+		CONTACT 		0/1 - How a node detect the present of another
+						0: A listening slot must overlap with a beaconing slot
+						1: Two active slots must overlap. It does not matter if is a beacon or listening slot. 
+		PHASE
+					0/1/2 - Phase between the nodes
+						0: No phase
+						1: The phase between the nodes is given by a continous value.
+						2: The phase between the nodes is given by discrete values. The discrete value is defined by increments of slot_length 
+
+
+RESULT VALUES
+
+	Both simulators return, for the specified run-time, the CDF values to the node detection, in the format "Instant_of_time  Number_of_detections" 
+	It can be easily plotted with applications like gnuplot
+
+	
