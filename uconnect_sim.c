@@ -26,7 +26,6 @@ struct t_conf {
 };
 
 gsl_rng *r;
-char *hyperslot;							//Contains the node behaviour for any hyperslot, which will be similar for all nodes
 struct t_conf sensor_conf;					//Stores the information related to the current experiment
 unsigned long hyperslot_size;				//Hyperslot size, measured in slot
 unsigned long *delay;						//Stores the phase of each node
@@ -46,34 +45,41 @@ unsigned long int getSeed(void)
 
 
 /*
- * Initalizes the data structures that will remain unchanged through all the experiment.
+ * Returns the state of the slot provided, identified by its index. It is calculated as it is stated in the U-connect article
+ * The Beaconing state is identified by 'B', the Listening state by 'L' and the idle state by '-'.
  *
+ */
+
+char getSlotState(unsigned long current_slot)
+{
+
+	char state;
+
+	if ( (0<= (current_slot % hyperslot_size)) && ((current_slot % hyperslot_size) < ((sensor_conf.p+1)/2) ) )
+		state = 'B';
+	else if ((current_slot % sensor_conf.p) == 0 ) 
+		state = 'L';
+	else 
+		state = '-';
+	
+	return state;
+}
+
+
+/*
+ * Initalizes the data structures that will remain unchanged through all the experiment.
  */
 
 void initData(void)
 {
-	unsigned long slot;
-	
 	delay = (unsigned long *) malloc (sizeof(unsigned long)*sensor_conf.n_sensors);
-	hyperslot = (char *)malloc(N_HYPERSLOTS * hyperslot_size * sizeof(char));
-	memset(hyperslot,0, sizeof(char)*(N_HYPERSLOTS*hyperslot_size));
-		
 	cdf = (unsigned long *) malloc (sizeof(unsigned long)*(N_HYPERSLOTS*hyperslot_size));
-	memset(cdf,0, sizeof(unsigned long)*(N_HYPERSLOTS *hyperslot_size));
-	
-	for (slot = 0; slot < (N_HYPERSLOTS*hyperslot_size); slot++)
-	{
-		if ( (0<= (slot % hyperslot_size)) && ((slot % hyperslot_size) < ((sensor_conf.p+1)/2) ) )	//Assign the activity state in each slot based in U-connect behviour
-			hyperslot[slot] = 'B';
-		else if ((slot % sensor_conf.p) == 0 ) 
-			hyperslot[slot] = 'L';
-		else 
-			hyperslot[slot] = '-';
-	}
+	memset(cdf,0, sizeof(unsigned long)*(N_HYPERSLOTS *hyperslot_size));	
 }
 
+
 /*
- * Assing the phase value for each one of the nodes. The delay ranges between [0, hyperslot_length]. Here is assigned a continous value. In case the phase has been set as discrete, the discrete value will be calculated in the detection process
+ * Assings the phase value for each one of the nodes. The delay ranges between [0, hyperslot_length]. Here is assigned a continous value. In case the phase has been set as discrete, the discrete value will be calculated in the detection process
  */
 
 void initPhase(void)
@@ -103,18 +109,19 @@ unsigned long checkDetection(void)
 	unsigned long time, in_phase;
 	int slot_delay;
 	
-	time = delay[1];
+	time = delay[1];													//Phase of node B
 	in_phase = time % CCA;												//Phase inside a single slot, used when the phase is continous
-	slot_delay = delay[1]/CCA;											//Phase measured in slots.
+	slot_delay = delay[1]/CCA;											//Discrete value of the phase.
 	
-	for (slot_nodeA = (hyperslot_size*H_DELAY); slot_nodeA < (N_HYPERSLOTS*hyperslot_size); slot_nodeA++)
+	for (slot_nodeA = (hyperslot_size*H_DELAY); slot_nodeA < ((N_HYPERSLOTS*hyperslot_size)+(hyperslot_size*H_DELAY)); slot_nodeA++)
 	{
-		if (slot_nodeA < slot_delay)									//The slots that do not overlap with the other node slots are not taken into account
+		if (slot_nodeA < (slot_delay+(hyperslot_size*H_DELAY)))			//The slots that do not overlap with the other node slots are not taken into account
 			continue;
 		
 		slot_nodeB = slot_nodeA - slot_delay;							//Slot value after applying the phase
 		
-		if (slot_nodeB >= (N_HYPERSLOTS*hyperslot_size))				//If were are out of the maximum amount of defined hyperslots
+	
+		if (slot_nodeB >= ((N_HYPERSLOTS*hyperslot_size)+(hyperslot_size*H_DELAY)))				//If were are out of the maximum amount of defined hyperslots
 			return ULONG_MAX;
 		
 		if (slot_nodeB == 0)											//If it is the first slot, we move to the equivalent one in the next slot, in case we need to analyze the values from previous slots
@@ -122,29 +129,29 @@ unsigned long checkDetection(void)
 		
 		if (sensor_conf.contact == FALSE)								//If the detection is made when a Beacon slot from node A overlaps with a Listen slot from node B
 		{
-			if (((hyperslot[slot_nodeA] == 'B') && (hyperslot[slot_nodeB] == 'L')) ||  ((hyperslot[slot_nodeA] == 'L') && (hyperslot[slot_nodeB] == 'B')))
+			if (((getSlotState(slot_nodeA) == 'B') && (getSlotState(slot_nodeB) == 'L')) ||  ((getSlotState(slot_nodeA) == 'L') && (getSlotState(slot_nodeB) == 'B')))
 			{
 				if ((in_phase == 0) || (sensor_conf.phase==2))			//In case there is no phase between the nodes, or the phase is discrete
-					return slot_nodeA - (hyperslot_size*H_DELAY);
-			
-				if (hyperslot[slot_nodeA] == 'B')								
+						return slot_nodeA - (hyperslot_size*H_DELAY);
+				
+				if (getSlotState(slot_nodeA) == 'B')								
 				{
-					if(hyperslot[slot_nodeA+1] == 'B')						//In case the phase is continous, and there is a positive value for the in_phase variable, there must a be an additional beacon slot following the current one
+					if(getSlotState(slot_nodeA + 1) == 'B')						//In case the phase is continous, and there is a positive value for the in_phase variable, there must a be an additional beacon slot following the current one to guarantee the detection
 						return slot_nodeA - (hyperslot_size*H_DELAY);
 				}
 				else
 				{
-					if(hyperslot[slot_nodeB-1] == 'B')						//In case the phase is continous, and there is a positive value for the in_phase variable, there must a be an additional beacon slot before the current one
+					if(getSlotState(slot_nodeB - 1) == 'B')						//In case the phase is continous, and there is a positive value for the in_phase variable, there must a be an additional beacon slot before the current one  to guarantee the detection
 						return slot_nodeA - (hyperslot_size*H_DELAY);
 				}
 			}
 		}
-		else if ((hyperslot[slot_nodeA] != '-') && (hyperslot[slot_nodeB] != '-'))		//If the detection is made when two active slots overlap
+		else if ((getSlotState(slot_nodeA) != '-') && (getSlotState(slot_nodeB) != '-'))		//If the detection is made simply when two active slots overlap
 		{
-			if ((in_phase == 0) || (sensor_conf.phase==2))								//In case there is no phase between the nodes, or the phase is discrete
+			if ((in_phase == 0) || (sensor_conf.phase==2))								//In case there is no phase between the nodes, or the phase is discrete				
 				return slot_nodeA - (hyperslot_size*H_DELAY);
-			
-			if ((hyperslot[slot_nodeA+1] != '-') || (hyperslot[slot_nodeB-1] != '-'))	//In case there is a positive value for the in_phase variable, there must be two consecutive active slots
+				
+			if ((getSlotState(slot_nodeA + 1) != '-') || (getSlotState(slot_nodeB - 1) != '-'))	//In case there is a positive value for the in_phase variable, there must be two consecutive active slots
 				return slot_nodeA - (hyperslot_size*H_DELAY);
 		}
 	}
@@ -157,7 +164,7 @@ int main(int argc, char** argv)
 	unsigned long slot, iteration;
 	
 	if (argc != 7) {
-		printf("ERROR:\n");
+		printf("ERROR: Wrong number of parameters\n");
 		exit(1);
 	}
 	
@@ -172,12 +179,12 @@ int main(int argc, char** argv)
 	r = gsl_rng_alloc (gsl_rng_ranlxs2);
 	gsl_rng_set (r, getSeed());
 	initData();
-
+	
 	for (iteration=0; iteration < sensor_conf.n_number_iterations ; iteration++) 
 	{
 		initPhase();
 		slot = checkDetection();
-			
+		
 		if (slot != ULONG_MAX)
 			cdf[slot]++;
 	}
