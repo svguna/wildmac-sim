@@ -46,7 +46,8 @@ unsigned long int getSeed(void)
 
 
 /*
- * Initalizes the data structures that will remain unchanged through all the experiment
+ * Initalizes the data structures that will remain unchanged through all the experiment.
+ *
  */
 
 void initData(void)
@@ -98,53 +99,53 @@ void initPhase(void)
 
 unsigned long checkDetection(void)
 {
-	unsigned long slot, aux_slot;
+	unsigned long slot_nodeA, slot_nodeB;
 	unsigned long time, in_phase;
 	int slot_delay;
 	
 	time = delay[1];
-	in_phase = time % CCA;		//Phase inside a single slot, used when the phase is continous
-	slot_delay = delay[1]/CCA;	//Phase measured in slots.
+	in_phase = time % CCA;												//Phase inside a single slot, used when the phase is continous
+	slot_delay = delay[1]/CCA;											//Phase measured in slots.
 	
-	for (slot = (hyperslot_size*H_DELAY); slot < (N_HYPERSLOTS*hyperslot_size); slot++)
+	for (slot_nodeA = (hyperslot_size*H_DELAY); slot_nodeA < (N_HYPERSLOTS*hyperslot_size); slot_nodeA++)
 	{
-		if (slot < slot_delay)
+		if (slot_nodeA < slot_delay)									//The slots that do not overlap with the other node slots are not taken into account
 			continue;
 		
-		aux_slot = slot - slot_delay;
+		slot_nodeB = slot_nodeA - slot_delay;							//Slot value after applying the phase
 		
-		if (aux_slot >= (N_HYPERSLOTS*hyperslot_size)) 
+		if (slot_nodeB >= (N_HYPERSLOTS*hyperslot_size))				//If were are out of the maximum amount of defined hyperslots
 			return ULONG_MAX;
 		
-		if (aux_slot == 0)
-			aux_slot=hyperslot_size;
+		if (slot_nodeB == 0)											//If it is the first slot, we move to the equivalent one in the next slot, in case we need to analyze the values from previous slots
+			slot_nodeB=hyperslot_size;
 		
-		if (sensor_conf.contact == FALSE)
+		if (sensor_conf.contact == FALSE)								//If the detection is made when a Beacon slot from node A overlaps with a Listen slot from node B
 		{
-			if (((hyperslot[slot] == 'B') && (hyperslot[aux_slot] == 'L')) ||  ((hyperslot[slot] == 'L') && (hyperslot[aux_slot] == 'B')))
+			if (((hyperslot[slot_nodeA] == 'B') && (hyperslot[slot_nodeB] == 'L')) ||  ((hyperslot[slot_nodeA] == 'L') && (hyperslot[slot_nodeB] == 'B')))
 			{
-				if ((in_phase == 0) || (sensor_conf.phase==2)) 
-					return slot - (hyperslot_size*H_DELAY);
+				if ((in_phase == 0) || (sensor_conf.phase==2))			//In case there is no phase between the nodes, or the phase is discrete
+					return slot_nodeA - (hyperslot_size*H_DELAY);
 			
-				if (hyperslot[slot] == 'B')
+				if (hyperslot[slot_nodeA] == 'B')								
 				{
-					if(hyperslot[slot+1] == 'B')
-						return slot - (hyperslot_size*H_DELAY);
+					if(hyperslot[slot_nodeA+1] == 'B')						//In case the phase is continous, and there is a positive value for the in_phase variable, there must a be an additional beacon slot following the current one
+						return slot_nodeA - (hyperslot_size*H_DELAY);
 				}
 				else
 				{
-					if(hyperslot[aux_slot-1] == 'B')
-						return slot - (hyperslot_size*H_DELAY);
+					if(hyperslot[slot_nodeB-1] == 'B')						//In case the phase is continous, and there is a positive value for the in_phase variable, there must a be an additional beacon slot before the current one
+						return slot_nodeA - (hyperslot_size*H_DELAY);
 				}
 			}
 		}
-		else if ((hyperslot[slot] != '-') && (hyperslot[aux_slot] != '-'))
+		else if ((hyperslot[slot_nodeA] != '-') && (hyperslot[slot_nodeB] != '-'))		//If the detection is made when two active slots overlap
 		{
-			if ((in_phase == 0) || (sensor_conf.phase==2))
-				return slot - (hyperslot_size*H_DELAY);
+			if ((in_phase == 0) || (sensor_conf.phase==2))								//In case there is no phase between the nodes, or the phase is discrete
+				return slot_nodeA - (hyperslot_size*H_DELAY);
 			
-			if ((hyperslot[slot+1] != '-') || (hyperslot[aux_slot-1] != '-')) 
-				return slot - (hyperslot_size*H_DELAY);
+			if ((hyperslot[slot_nodeA+1] != '-') || (hyperslot[slot_nodeB-1] != '-'))	//In case there is a positive value for the in_phase variable, there must be two consecutive active slots
+				return slot_nodeA - (hyperslot_size*H_DELAY);
 		}
 	}
 	return ULONG_MAX;
