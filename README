@@ -13,6 +13,13 @@ BUILD
 		Linux:		gcc -o uconnect_sim uconnect_sim.c -Wall -lgsl -lgslcblas
 		Mac:		gcc -o uconnect_sim uconnect_sim.c -Wall -I/opt/local/include -L/opt/local/lib -lgsl
 
+
+	I have included a makefile, to generate the binary files in an easier way. The available commands are:
+
+		linux: Create the binary files for a linux environment.
+		mac: Create the binary files for a mac environment
+		clean: Delete the binary files. 
+
 EXECUTION
 
 	The times must be given in microseconds.
