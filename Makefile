@@ -16,8 +16,7 @@ CFLAGS += ${LDFLAGS} ${INCDIRS}
 
 
 all:
-	${CC} -o ruth_sim ruth_simulator.c ${CFLAGS}
-	${CC} -o uconnect_sim uconnect_sim.c ${CFLAGS}
+	${CC} -o wildmac_sim wildmac_sim.c ${CFLAGS}
 
 clean:
 	rm -f ruth_sim uconnect_sim
