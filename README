@@ -4,21 +4,7 @@ REQUIREMENTS
 	It can be downloaded at the following location: http://www.gnu.org/software/gsl/
 
 BUILD
-	Ruth
-		Linux:		gcc -o ruth_sim ruth_simulator.c -Wall -lgsl -lgslcblas
-		Mac:		gcc -o ruth_sim ruth_simulator.c -Wall -I/opt/local/include -L/opt/local/lib -lgsl
-
-	U-connect
-	
-		Linux:		gcc -o uconnect_sim uconnect_sim.c -Wall -lgsl -lgslcblas
-		Mac:		gcc -o uconnect_sim uconnect_sim.c -Wall -I/opt/local/include -L/opt/local/lib -lgsl
-
-
-	I have included a makefile, to generate the binary files in an easier way. The available commands are:
-
-		linux: Create the binary files for a linux environment.
-		mac: Create the binary files for a mac environment
-		clean: Delete the binary files. 
+    Run "make".
 
 EXECUTION
 
