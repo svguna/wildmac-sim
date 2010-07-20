@@ -17,7 +17,8 @@ endif
 CFLAGS += ${LDFLAGS} ${INCDIRS}
 
 
-all: wildmac_nowrap wildmac_wrap wildmac_delay
+all: wildmac_nowrap wildmac_wrap wildmac_delay wildmac_split_nowrap wildmac_rsplit_nowrap wildmac_split_wrap wildmac_rsplit_wrap wildmac_split_delay wildmac_rsplit_delay
+
 
 wildmac_nowrap: $(OBJECTS)
 	${CC} -o $@ wildmac_sim.o no_wrap.o ${CFLAGS}
@@ -28,6 +29,24 @@ wildmac_wrap: $(OBJECTS)
 wildmac_delay: $(OBJECTS)
 	${CC} -o $@ wildmac_sim.o delay_next.o ${CFLAGS}
 
+wildmac_split_nowrap: $(OBJECTS)
+	${CC} -o $@ wildmac_sim_split.o no_wrap_split.o ${CFLAGS}
+
+wildmac_rsplit_nowrap: $(OBJECTS)
+	${CC} -o $@ wildmac_sim_rsplit.o no_wrap_split.o ${CFLAGS}
+
+wildmac_split_wrap: $(OBJECTS)
+	${CC} -o $@ wildmac_sim_split.o wrap_split.o ${CFLAGS}
+
+wildmac_rsplit_wrap: $(OBJECTS)
+	${CC} -o $@ wildmac_sim_rsplit.o wrap_split.o ${CFLAGS}
+
+wildmac_split_delay: $(OBJECTS)
+	${CC} -o $@ wildmac_sim_split.o delay_next_split.o ${CFLAGS}
+
+wildmac_rsplit_delay: $(OBJECTS)
+	${CC} -o $@ wildmac_sim_rsplit.o delay_next_split.o ${CFLAGS}
+
 %.o: %.c
 	${CC} -c $< ${CFLAGS}
 
@@ -35,10 +54,16 @@ run_simulation: all
 	./wildmac_nowrap > no_wrap.data
 	./wildmac_wrap > wrap.data
 	./wildmac_delay > delay.data
+	./wildmac_split_nowrap > no_wrap_split.data
+	./wildmac_rsplit_nowrap > no_wrap_rsplit.data
+	./wildmac_split_wrap > wrap_split.data
+	./wildmac_rsplit_wrap > wrap_rsplit.data
+	./wildmac_split_delay > delay_split.data
+	./wildmac_rsplit_delay > delay_rsplit.data
 	gnuplot cdf.gp
 	epstopdf cdf.eps
 	rm cdf.eps
 
 clean:
-	rm -f wildmac_nowrap wildmac_wrap wildmac_delay *.o 
+	rm -f wildmac_nowrap wildmac_wrap wildmac_delay wildmac_split_nowrap wildmac_rsplit_nowrap wildmac_split_wrap wildmac_rsplit_wrap wildmac_split_delay wildmac_rsplit_delay *.o 
 
