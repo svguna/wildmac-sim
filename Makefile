@@ -17,14 +17,24 @@ endif
 CFLAGS += ${LDFLAGS} ${INCDIRS}
 
 
-all: wildmac_nowrap
+all: wildmac_nowrap wildmac_wrap
 
 wildmac_nowrap: $(OBJECTS)
 	${CC} -o $@ wildmac_sim.o no_wrap.o ${CFLAGS}
 
+wildmac_wrap: $(OBJECTS)
+	${CC} -o $@ wildmac_sim.o wrap.o ${CFLAGS}
+
 %.o: %.c
 	${CC} -c $< ${CFLAGS}
 
+run_simulation: all
+	./wildmac_nowrap > no_wrap.data
+	./wildmac_wrap > wrap.data
+	gnuplot cdf.gp
+	epstopdf cdf.eps
+	rm cdf.eps
+
 clean:
-	rm -f ruth_sim uconnect_sim
+	rm -f wildmac_nowrap *.o 
 
