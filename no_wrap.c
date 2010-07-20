@@ -8,12 +8,13 @@
 
 int64_t check_contact(int64_t e1, int64_t t1, int64_t e2, int64_t t2)
 {
-    int contact = (t2 > 0 && t2 > t1 + LOW && t2 < t1 + UP) || 
-        (t1 > 0 && t1 > t2 + LOW && t1 < t2 + UP);
+    int contact = (t2 + BEACON - CONTACT_OVERLAP > 0 && t2 > t1 + LOW && 
+            t2 < t1 + UP) || 
+        (t1 + BEACON - CONTACT_OVERLAP > 0 && t1 > t2 + LOW && t1 < t2 + UP);
     if (!contact) {
         return -1;
     }
-    if (t2 > 0 && t2 > t1 + LOW && t2 < t1 + UP) {
+    if (t2 + BEACON - CONTACT_OVERLAP > 0 && t2 > t1 + LOW && t2 < t1 + UP) {
         printf ("#%lld 1 (%lld, %lld, %lld, %lld) receives 2's beacon\n", t2, 
                 t1, t1 + BEACON, t1 + ACTIVE, t1 + EPOCH);
         return t2;
