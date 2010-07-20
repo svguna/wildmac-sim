@@ -40,5 +40,5 @@ run_simulation: all
 	rm cdf.eps
 
 clean:
-	rm -f wildmac_nowrap *.o 
+	rm -f wildmac_nowrap wildmac_wrap wildmac_delay *.o 
 
