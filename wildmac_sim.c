@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "sim_config.h"
+#include "sim_api.h"
 
 gsl_rng *rnd_gen[2];
 
