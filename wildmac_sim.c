@@ -4,23 +4,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-// Time (us) that a receiver must detect (at a minimum) a beacon.
-#define CONTACT_OVERLAP 250
-
-#define TIME_LIMIT 60000000LL
-
-#define EPOCH 100000LL
-#define BEACON 10000LL
-#define SAMPLES 4LL
-#define REPEAT 10000LL
-
-#define EPOCH_LIMIT (TIME_LIMIT / EPOCH)
-
-#define ACTIVE (BEACON + BEACON * SAMPLES)
-#define RANGE (EPOCH - ACTIVE)
-
-#define LOW BEACON
-#define UP ((SAMPLES + 1) * BEACON - CONTACT_OVERLAP)
+#include "sim_config.h"
 
 gsl_rng *rnd_gen[2];
 
@@ -29,36 +13,6 @@ static unsigned long get_seed()
     long seed = random();
     printf("#seed: %ld\n", seed);
     return seed;
-}
-
-
-static inline int64_t check_contact(int64_t e1, int64_t t1, int64_t e2, 
-        int64_t t2)
-{
-    int contact = (t2 > 0 && t2 > t1 + LOW && t2 < t1 + UP) || 
-        (t1 > 0 && t1 > t2 + LOW && t1 < t2 + UP);
-    if (!contact) {
-        return -1;
-    }
-    if (t2 > 0 && t2 > t1 + LOW && t2 < t1 + UP) {
-        printf ("#%lld 1 (%lld, %lld, %lld, %lld) receives 2's beacon\n", t2, 
-                t1, t1 + BEACON, t1 + ACTIVE, t1 + EPOCH);
-        return t2;
-    }
-    printf ("#%lld 2 (%lld, %lld, %lld, %lld) receives 1's beacon\n", t1, t2, 
-            t2 + BEACON, t2 + ACTIVE, t2 + EPOCH);
-    return t1;
-}
-
-
-static inline int64_t get_next_epoch(int64_t e, int a)
-{
-    return e + EPOCH;
-}
-
-static inline int64_t get_activity(int id, int64_t epoch)
-{
-    return epoch + gsl_rng_uniform_int(rnd_gen[id], RANGE);
 }
 
 
