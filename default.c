@@ -1,10 +1,10 @@
 #include "sim_config.h"
 
-#define ACTIVE (CONTACT_OVERLAP + BEACON + BEACON * SAMPLES)
+#define ACTIVE (CONTACT_OVERLAP + BEACON * (SAMPLES + 1))
 #define RANGE (EPOCH - ACTIVE)
 
-#define LOW BEACON
-#define UP ((SAMPLES + 1) * BEACON)
+#define LOW (CONTACT_OVERLAP) 
+#define UP (ACTIVE - CONTACT_OVERLAP)
 
 int64_t check_contact(int64_t e1, int64_t t1, int64_t e2, int64_t t2)
 {
