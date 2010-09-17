@@ -42,14 +42,14 @@ static int wildmac_sim()
     new_a1 = a1 = get_activity(0, epoch1);
     new_a2 = a2 = get_activity(1, epoch2);
 
-    contact = check_contact(epoch1, a1, epoch2, a2);
+    contact = check_contact(epoch1, a1, epoch2, a2, 0);
 
     while (contact < 0 && n1 < EPOCH_LIMIT && n2 < EPOCH_LIMIT) {
         if (to_advance == 1) {
             new_epoch1 = get_next_epoch(epoch1, a1);
             n1++;
             new_a1 = get_activity(0, new_epoch1);
-            contact = check_contact(new_epoch1, new_a1, epoch2, a2);
+            contact = check_contact(new_epoch1, new_a1, epoch2, a2, 0);
             if (contact >= 0)
                 break;
             to_advance = 2;
@@ -60,10 +60,10 @@ static int wildmac_sim()
         n2++;
         new_a2 = get_activity(1, new_epoch2);
 
-        contact = check_contact(new_epoch2, new_a2, epoch1, a1);
+        contact = check_contact(new_epoch2, new_a2, epoch1, a1, 0);
         if (contact >= 0)
             break;
-        contact = check_contact(new_epoch2, new_a2, new_epoch1, new_a1);
+        contact = check_contact(new_epoch2, new_a2, new_epoch1, new_a1, 0);
         if (contact >= 0)
             break;
         a1 = new_a1;

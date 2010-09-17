@@ -3,14 +3,12 @@
 
 #include <gsl/gsl_rng.h>
 
-#define TIME_LIMIT 60000000LL
+#define TIME_LIMIT 150000000LL
 
-#define EPOCH 100000LL
-#define BEACON 5000LL
-#define SAMPLES 6LL
-#define REPEAT 10000000LL
+extern int64_t EPOCH, BEACON, CONTACT_OVERLAP, SAMPLES;
 
-#define CONTACT_OVERLAP 2500
+#define REPEAT 10000LL
+
 #define EPOCH_LIMIT (TIME_LIMIT / EPOCH)
 
 extern gsl_rng *rnd_gen[2];

@@ -53,7 +53,7 @@ wildmac_rsplit_delay: wildmac_sim_rsplit.o delay_next_split.o
 	${CC} -c $< ${CFLAGS}
 
 run_wildmac: wildmac
-	./wildmac > wildmac.data
+	./wildmac 1000000 11460 250 42 > wildmac.data
 	gnuplot cdf-wildmac.gp
 	epstopdf cdf-wildmac.eps
 	rm cdf-wildmac.eps
