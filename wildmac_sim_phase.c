@@ -7,7 +7,7 @@
 #include "sim_config.h"
 #include "sim_api.h"
 
-gsl_rng *rnd_gen[2];
+gsl_rng *rnd_gen;
 
 int64_t EPOCH, BEACON, CONTACT_OVERLAP, SAMPLES;
 
@@ -34,18 +34,12 @@ static int wildmac_sim()
     int n1 = 0, n2 = 0;
     int i, tmp;
 
-    rnd_gen[0] = gsl_rng_alloc(gsl_rng_mrg);
-    rnd_gen[1] = gsl_rng_alloc(gsl_rng_mrg);
 
-    gsl_rng_set(rnd_gen[0], get_seed());
-
-    tmp = gsl_rng_uniform_int(rnd_gen[1], 10000);
-    for (i = 0; i < tmp; i++)
-        true_contact = gsl_rng_uniform_int(rnd_gen[0], EPOCH);
+    tmp = gsl_rng_uniform_int(rnd_gen, 10000);
     new_epoch1 = epoch1 = 0;
     
-    gsl_rng_set(rnd_gen[1], get_seed());
-    new_epoch2 = epoch2 = gsl_rng_uniform_int(rnd_gen[1], EPOCH);
+    true_contact = gsl_rng_uniform_int(rnd_gen, EPOCH);
+    new_epoch2 = epoch2 = -gsl_rng_uniform_int(rnd_gen, EPOCH);
 
     printf("#start: %lld %lld\n", epoch1, epoch2);
 
@@ -54,7 +48,7 @@ static int wildmac_sim()
 
     contact = check_contact(epoch1, a1, epoch2, a2, true_contact);
 
-    while (contact < 0 && n1 < EPOCH_LIMIT && n2 < EPOCH_LIMIT) {
+    while (contact < 0 && n1 < EPOCH_LIMIT && n2 <= EPOCH_LIMIT) {
         if (to_advance == 1) {
             new_epoch1 = get_next_epoch(epoch1, a1);
             n1++;
@@ -90,9 +84,7 @@ static int wildmac_sim()
     else
         printf("#epochs: %d %d\n", n1, n2);
 
-    gsl_rng_free(rnd_gen[0]);
-    gsl_rng_free(rnd_gen[1]);
-    return contact;
+    return contact - true_contact;
 }
 
 
@@ -114,6 +106,10 @@ int main(int narg, char *varg[])
     int64_t contacts[REPEAT];
     int contacts_cnt = 0;
 
+    rnd_gen = gsl_rng_alloc(gsl_rng_mrg);
+
+    gsl_rng_set(rnd_gen, get_seed());
+    
     EPOCH = atoll(varg[1]);
     BEACON = atoll(varg[2]);
     CONTACT_OVERLAP = atoll(varg[3]);
@@ -134,6 +130,7 @@ int main(int narg, char *varg[])
         printf("%f %f %f\n", (float) contacts[i], 
                 (float) i / contacts_cnt, (float) i / REPEAT);
     }
+    gsl_rng_free(rnd_gen);
     
     return 0;
 }

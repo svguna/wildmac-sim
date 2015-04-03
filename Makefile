@@ -52,11 +52,27 @@ wildmac_rsplit_delay: wildmac_sim_rsplit.o delay_next_split.o
 %.o: %.c
 	${CC} -c $< ${CFLAGS}
 
+run_det: wildmac
+	./wildmac 2000000 20250 250 49 > cdf_hp_20ms_1.0_sim.data
+
 run_wildmac: wildmac
-	./wildmac 1000000 11460 250 42 > wildmac.data
-	gnuplot cdf-wildmac.gp
-	epstopdf cdf-wildmac.eps
-	rm cdf-wildmac.eps
+	./wildmac 2000000 20860 250 25 > cdf_hp_20ms_0.5_sim.data
+	./wildmac 2000000 20180 250 31 > cdf_hp_20ms_0.6_sim.data
+	./wildmac 2000000 20660 250 36 > cdf_hp_20ms_0.7_sim.data
+	./wildmac 2000000 20610 250 42 > cdf_hp_20ms_0.8_sim.data
+	./wildmac 1000000 20880 250 15 > cdf_hp_20ms_0.9_sim.data
+
+run_tmote: wildmac
+	./wildmac 2000000 86000 1000 6 > cdf_hp_20ms_0.5_tmote.data
+	./wildmac 2000000 90000 1000 7 > cdf_hp_20ms_0.6_tmote.data
+	./wildmac 2000000 106000 1000 7 > cdf_hp_20ms_0.7_tmote.data
+	./wildmac 2000000 109000 1000 8 > cdf_hp_20ms_0.8_tmote.data
+	./wildmac 1000000 64000 1000 5 > cdf_hp_20ms_0.9_tmote.data
+
+
+cdf_hp_20ms_sim.pdf: run_wildmac
+	gnuplot cdf_hp_20ms_sim.gp
+	epstopdf cdf_hp_20ms_sim.eps
 
 run_all_simulation: all
 	./wildmac_nowrap > no_wrap.data

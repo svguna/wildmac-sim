@@ -64,7 +64,7 @@ int64_t get_next_epoch(int64_t e, int a)
 
 inline int64_t get_activity(int id, int64_t epoch)
 {
-    return epoch + gsl_rng_uniform_int(rnd_gen[id], RANGE);
+    return epoch + gsl_rng_uniform_int(rnd_gen, RANGE);
 }
 
 
